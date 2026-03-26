@@ -25,9 +25,9 @@ if os.path.exists(background_path):
         bg_imagem_tk = ImageTk.PhotoImage(bg_img)
         background.create_image(0, 0, image=bg_imagem_tk, anchor="nw")
     except Exception:
-        background.configure(bg="#2b2b3d")
+        background.configure(bg="#2e2e44")
 else:
-    background.configure(bg="#2b2b3d")
+    background.configure(bg="#2e2e44")
 
 sizes = [8, 16, 32, 64]
 
@@ -64,6 +64,8 @@ def img_validation():
         file_entry.insert(0, os.path.basename(path))
         file_entry.configure(state="readonly")
 
+        show_preview(img)
+
         label_info.configure(text=f"{width}x{height} ʕっ•ᴥ•ʔっ {img.mode}", foreground="black")
 
         options = drop_scaling_options(width, height)
@@ -85,10 +87,7 @@ def drop_scaling_options(width: int, height: int) -> list[str]:
         w = width * i
         h = height * i
 
-        if w == h:
-            text = f"{w}x{h} ({i}x)"
-        else:
-            text = f"{w}x{h} ({i}x)"
+        text = f"{w}x{h} ({i}x)"
         
         options.append(text)
     
@@ -101,6 +100,20 @@ def pixel_scaling(img: Image.Image, img_scale: int) -> Image.Image:
     scaled_img = img.resize((new_width, new_height), resample=Image.NEAREST)
     
     return scaled_img
+
+def show_preview(img: Image.Image):
+    preview_size = 256
+    preview_scaling = preview_size // max(img.width, img.height)
+    preview_scaling = max(preview_scaling, 1)
+    img_preview = img.resize((img.width * preview_scaling, img.height * preview_scaling), resample=Image.NEAREST)
+    show_img = ImageTk.PhotoImage(img_preview)
+
+    preview.delete("all")
+    preview.create_image( 
+        preview_size // 2, preview_size // 2, 
+        image=show_img, anchor="center")
+    preview.tk_img = show_img
+
 
 mainframe = ttk.Frame(window, padding=20)
 background.create_window(width // 2, height // 2, window=mainframe, anchor="center", width=512, height=400)
@@ -126,5 +139,9 @@ label_info.grid(row=1, column=2, pady=(10, 0))
 
 label_status = ttk.Label(text="Select an image to proceed.", foreground="gray")
 label_status.pack(side="left")
+
+preview = tk.Canvas( mainframe, width=256, height=256, bg="#e0d6d6", borderwidth=1, relief="sunken")
+preview.grid(row=2, column=0, columnspan=3, pady=(15,0))
+preview.create_text(128, 128, text="Open your pixel-art to see the preview", fill="#7A7979", font=("Arial", 13), justify="center")
 
 window.mainloop()
