@@ -93,6 +93,11 @@ def drop_scaling_options(width: int, height: int) -> list[str]:
     
     return options
 
+def options_int(options: str) -> int:
+        scaling_part = options.split("(")[1]
+        i = scaling_part.replace("x)", "")
+        return int(i)
+
 def pixel_scaling(img: Image.Image, img_scale: int) -> Image.Image:
    
     new_width = img.width * img_scale
@@ -100,6 +105,28 @@ def pixel_scaling(img: Image.Image, img_scale: int) -> Image.Image:
     scaled_img = img.resize((new_width, new_height), resample=Image.NEAREST)
     
     return scaled_img
+
+def pixel_scaling_call():
+    global img_path, img_og
+
+    if img_og is None:
+        messagebox.showwarning("Open an Image first! ʕ•ᴥ•ʔ")
+        return
+    
+    options = drop_scaling.get()
+    scaling = options_int(options)
+
+    scaled_img = pixel_scaling(img_og, scaling)
+    before_name = os.path.splitext(os.path.basename(img_path))[0]
+    after_name = f"{before_name}_{scaling}x.png"
+    save_file = filedialog.asksaveasfilename( title="Save Image...", initialfile=after_name, defaultextension=".png", filetypes=[("PNG","*.png")])
+
+    if not save_file:
+        return
+    
+    scaled_img.save(save_file, format="PNG")
+    label_status.configure( text=f" Saved! ʕ^ᴥ^ʔ ", foreground="green")
+
 
 def show_preview(img: Image.Image):
     preview_size = 256
@@ -142,6 +169,15 @@ label_status.pack(side="left")
 
 preview = tk.Canvas( mainframe, width=256, height=256, bg="#e0d6d6", borderwidth=1, relief="sunken")
 preview.grid(row=2, column=0, columnspan=3, pady=(15,0))
-preview.create_text(128, 128, text="Open your pixel-art to see the preview", fill="#7A7979", font=("Arial", 13), justify="center")
+preview.create_text(128, 128, text="Nothing Yet ʕ◉ᴥ◉ʔ", fill="#7A7979", font=("Arial", 13), justify="center")
+
+b_frame = ttk.Frame(mainframe)
+b_frame.grid(row=3, column=0, columnspan=3, pady=(15,0))
+scale_button = ttk.Button(b_frame, text="Scale!", command=pixel_scaling_call)
+scale_button.pack(side="left", padx=(0, 10))    
+button_stat = ttk.Label(b_frame, text="Select your pixel-art.", foreground="gray")
+button_stat.pack(side="left")
+
+mainframe.columnconfigure(1, weight=1)
 
 window.mainloop()
